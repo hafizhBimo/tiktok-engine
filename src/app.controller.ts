@@ -5,6 +5,7 @@ import { WebhookCommentResponseDto } from './dto/webhook-comment-response.dto';
 import { ResponseHelper } from './helpers/response.helper';
 import { CommonResponseDto } from './dto/common-response.dto';
 import { messagePayloadI } from './dto/docspec.dto';
+import { TiktokBusinessApiService } from './services/tiktok-business-api.service';
 
 @Controller()
 export class AppController {
@@ -13,6 +14,7 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly responseHelper: ResponseHelper,
+    private readonly tiktokBusinessApiService: TiktokBusinessApiService,
   ) { }
 
   @Get()
@@ -40,6 +42,19 @@ export class AppController {
       const data = await this.appService.replyComment(body);
       this.logger.log(data);
       return this.responseHelper.responseSuccessData(res, 200, 'Success', data);
+    } catch (error) {
+      this.logger.error(error);
+      return this.responseHelper.responseServerError(res, error);
+    }
+  }
+
+  @Get('channel')
+  async getChannelConfig(@Res() res: Response): Promise<CommonResponseDto> {  
+    try {
+      this.logger.log('get channel config hit');
+      const accessToken = await this.tiktokBusinessApiService.getAccessToken();
+      this.logger.log('access token:', accessToken);
+      return this.responseHelper.responseSuccessData(res, 200, 'Success', { accessToken });
     } catch (error) {
       this.logger.error(error);
       return this.responseHelper.responseServerError(res, error);
